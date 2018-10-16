@@ -4,6 +4,7 @@
 
 let component = ReasonReact.statelessComponent("App");
 
+/*
 let make = (~message, _children) => {
   ...component,
   render: _self =>
@@ -18,4 +19,13 @@ let make = (~message, _children) => {
         (ReasonReact.string("and save to reload."))
       </p>
     </div>,
+};
+*/
+
+let make = (_children) => {
+  ...component,
+  render: _self =>
+    <div>
+      <Systems.SystemsTable />
+    </div>
 };

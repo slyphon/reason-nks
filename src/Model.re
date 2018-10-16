@@ -15,7 +15,6 @@
 */
 
 open Js.Option;
-open Belt;
 
 type league =
   | NFL
@@ -85,6 +84,8 @@ module AtsTotals = {
   let from_json = decode_from_str(from_str)
 };
 
+open MomentRe;
+
 type system = {
   id: int,
   query: string,
@@ -95,8 +96,11 @@ type system = {
   season_type: season_type,
   killersports_data: string,
   error: int,
-  last_alerted: int
+  last_alerted: Moment.t
 };
+
+let int_to_moment = (json): Moment.t =>
+  Json.Decode.int(json) |> MomentRe.momentWithUnix
 
 module Decode = {
   let system = (json) =>
@@ -110,23 +114,32 @@ module Decode = {
       ats_totals: json |> field("ats_totals", AtsTotals.from_json),
       killersports_data: json |> field("killersports_data", string),
       error: json |> field("error", int),
-      last_alerted: json |> field("LastAlerted", int)
+      last_alerted: json |> field("LastAlerted", int_to_moment)
     };
+
+  let systems_array = (json) =>
+    Json.Decode.array(system, json)
 };
 
 module API = {
-  let system_view_url = "/api/1.0/json?page=systems&action=view";
+  let system_view_url = "http://localhost:5000/api/1.0/json?page=systems&action=view";
+
+  let log_response = (resp) => Js.log2("fetch result", resp)
+
+  let get_systems = () => {
+    Fetch.fetchWithInit(
+      system_view_url,
+      Fetch.RequestInit.make(~method_=Post, ~mode=Fetch.NoCORS, ())
+    )
+  }
 
   /* /api/1.0/json?page=systems&action=view */
-  let get_systems = () => {
+  let get_systems_and_decode = () => {
     Js.Promise.(
-      Fetch.fetchWithInit(
-        system_view_url,
-        Fetch.RequestInit.make(~method_=Post, ()),
-      )
+      get_systems()
       |> then_(Fetch.Response.json)
       |> then_(json => Decode.system(json) |> resolve)
-      |> resolve
+      /* |> resolve */
     )
   }
 }

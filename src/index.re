@@ -8,7 +8,7 @@ external unregister_service_worker : unit => unit = "unregister";
 [%raw {|require('isomorphic-fetch')|}];
 
 ReactDOMRe.renderToElementWithId(
-  <App message="Welcome to React and Reason" />,
+  <App />,
   "root",
 );
 
